@@ -6,7 +6,7 @@ services:
     container_name: backendapi_container
     volumes: 
       - ./api/:/home/Documents/BackendChallenger
-    command: npm run start
+    command: npm run dev
     ports:
       - '3000:3000'
     networks:
@@ -17,7 +17,7 @@ services:
     volumes:
       - ./data:/data/db
     ports:
-      - '27018:27017'
+      - '27017:27017'
     networks:
       - backend
 
