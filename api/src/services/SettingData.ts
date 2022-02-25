@@ -1,28 +1,115 @@
 import axios from 'axios';
 import config from 'config';
-
+import {CharModel} from '../models/Char';
 export default class {
 
-    async fetchingData() {
-        let api = config.get<string>('books_api');
+    private async fetchingCharsEndpoints() {
+        try {
+            let response = await axios.get(config.get<string>('books_api'));
+            let data = response.data;
+            let povCharacters: any = [];
+            let allCharacters: any = [];
+            let characters: any = [];
 
-        let response = await axios.get(api);
+            data.forEach((povChar: any) => povCharacters.push(povChar.povCharacters));
+            povCharacters.forEach((char: any) => {if(char.length != 0) allCharacters.push(char)});
+            allCharacters.forEach((listChars: any) => {listChars.forEach((char: any) => characters.push(char));});
+            let groupChars = characters.filter((item: any, i: any) => characters.indexOf(item) === i);
 
-        let data = response.data;
-        let povCharacters: any = [];
-        let mainCharacters: any = [];
-        data.forEach((povChar: any) => povCharacters.push(povChar.povCharacters));
-        povCharacters.forEach((char: any) => {
-            if(char.length != 0) mainCharacters.push(char);
-        })
-        let plag: any = [];
-        mainCharacters.forEach((listChars: any) => {
-            listChars.forEach((char: any) => plag.push(char));
-        });
-
-        let newPlat = plag.filter((item: any, i: any) => plag.indexOf(item) === i);
-
-        return newPlat;
+            return groupChars;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
     }
 
+    async fetchingDataFromAllChars() {
+        try {
+            let endpointsChars = await this.fetchingCharsEndpoints();
+            let data: Array<any> = [];
+
+            for(let chat in endpointsChars) {
+                let responseAPI = await axios.get(endpointsChars[chat]);
+                data.push(responseAPI.data);
+            }
+            
+            data.forEach(async (character: any) => {
+                let isValid = await CharModel.findOne({name: character.name});
+                let charAllegencies = await this.addingAllegiances(character.allegiances);
+
+                let formatedChar = {
+                    name: character.name,
+                    gender: character.gender,
+                    culture: character.culture,
+                    born: character.born,
+                    died: character.died,
+                    title: character.title,
+                    aliases: character.aliases,
+                    father: character.father,
+                    mother: character.mother,
+                    spouse: character.spouse,
+                    allegencies: charAllegencies,
+                    povBook: character.povBook,
+                    tvSeries: character.tvSeries,
+                    playedBy: character.playedBy,
+                };
+
+                if(!isValid) await CharModel.create(formatedChar);
+            });
+
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    async addingAllegiances(allegiances: any) {
+        try {
+            let arrayAllegiances: Array<any> = [];
+
+            for(let chat in allegiances) {
+                let responseAPI = await axios.get(allegiances[chat]);
+                arrayAllegiances.push(responseAPI.data);
+            }
+
+            return arrayAllegiances;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    async gettingAllCharsFromDb() {
+        try {
+            const Chars = await CharModel.find();
+            return Chars;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    async gettingDetailsFromChar(id: string) {
+        let data = await CharModel.findById(id);
+
+        let details = {
+            name: data.name,
+            gender: data.gender,
+            culture: data.culture,
+            born: data.born,
+            died: data.died,
+            houses: data.allegencies,
+            tvSeries: data.tvSeries,
+            playedBy: data.playedBy
+        };
+
+        return details;
+    }
+
+    async gettingCovers() {
+        try {
+            let images = await axios.get('https://covers.openlibrary.org/b/id/240727-S.jpg');
+            let apiImage = images.data;
+            let imageConverted = apiImage.toString('base64');
+            return imageConverted;
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
 }

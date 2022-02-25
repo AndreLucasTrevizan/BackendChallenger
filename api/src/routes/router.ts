@@ -10,9 +10,27 @@ router.get('/', (req: Request, res: Response) => {
 
 router.get('/data', async (req: Request, res: Response) => {
     let settingData = new SettingData();
-    let APIdata = await settingData.fetchingData();
+    let APIdata = await settingData.fetchingDataFromAllChars();
     
     res.status(200).json(APIdata);
+});
+
+router.get('/chars', async (req: Request, res: Response) => {
+    let settingData = new SettingData();
+    let chars = await settingData.gettingAllCharsFromDb();
+    res.status(200).json(chars);
+})
+
+router.get('/char/:id', async (req: Request, res: Response) => {
+    let settingData = new SettingData();
+    let chars = await settingData.gettingDetailsFromChar(req.params.id);
+    res.status(200).json(chars);
+});
+
+router.get('/covers', async (req: Request, res: Response) => {
+    let settingData = new SettingData();
+    let covers = await settingData.gettingCovers();
+    res.status(200).json(covers);
 });
 
 export default router;
