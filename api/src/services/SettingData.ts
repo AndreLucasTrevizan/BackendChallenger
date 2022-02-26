@@ -3,20 +3,56 @@ import config from 'config';
 import {CharModel} from '../models/Char';
 export default class {
 
-    private async fetchingCharsEndpoints() {
+    async fetchingCharsEndpoints() {
         try {
             let response = await axios.get(config.get<string>('books_api'));
             let data = response.data;
             let povCharacters: any = [];
             let allCharacters: any = [];
             let characters: any = [];
+            let books: any = [];
 
-            data.forEach((povChar: any) => povCharacters.push(povChar.povCharacters));
-            povCharacters.forEach((char: any) => {if(char.length != 0) allCharacters.push(char)});
+            //data.forEach((povChar: any) => povCharacters.push(povChar.povCharacters));
+
+            data.forEach(async (book: any) => {
+                let povCharsInfo = await this.gettingDataOfPovChars(book.povCharacters);
+                
+                let formatedBook = {
+                    name: book.name,
+                    isbn: book.isbn,
+                    authors: book.authors,
+                    numberOfPages: book.numberOfPages,
+                    publisher: book.publisher,
+                    country: book.country,
+                    mediaType: book.mediaType,
+                    povCharacters: povCharsInfo
+                };
+
+                books.push(formatedBook);
+            });
+            //console.log(books);
+            return books;
+
+            /* povCharacters.forEach((char: any) => {if(char.length != 0) allCharacters.push(char)});
             allCharacters.forEach((listChars: any) => {listChars.forEach((char: any) => characters.push(char));});
             let groupChars = characters.filter((item: any, i: any) => characters.indexOf(item) === i);
 
-            return groupChars;
+            return groupChars; */
+        } catch (error: any) {
+            throw new Error(error.message);
+        }
+    }
+
+    private async gettingDataOfPovChars(povChars: any) {
+        try {
+            let data: Array<any> = [];
+
+            for(let char in povChars) {
+                let responseAPI = await axios.get(povChars[char]);
+                data.push(responseAPI.data);
+            }
+
+            return data;
         } catch (error: any) {
             throw new Error(error.message);
         }
