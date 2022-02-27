@@ -19,6 +19,17 @@ import mongoose from 'mongoose';
 
 mongoose.connect('mongodb://mongo:27017/backend');
 
+import DataController from './controllers/DataController';
+
+const dataController = new DataController();
+
 app.listen(port, async () => {
-    console.log(`App rodando na porta ${port}`);
+    try {
+        await dataController.loadingBooksData();
+        await dataController.gettingInfoFromAllChars();
+
+        console.log(`App rodando na porta ${port}`);
+    } catch (error: any) {
+        throw new Error(error.message);
+    }
 });
