@@ -10,6 +10,8 @@ Para rodar o projeto rode docker-compose up -d para subir os Containers.
 
 ## Sobre carregamento dos Dados da API para dentro do Banco Mongo
 
+API -> https://anapioficeandfire.com/api/books/
+
 Dentro de app.ts, no momento de iniciar o servidor eu chamo dois metodos que fazem a requisição a API e ao mesmo tempo já preenchem o banco com as informações que são necessárias, eu formatei esses dados antes de salva-los no banco, ai sim, depois disso inicia-se o servidor.
 
 ## Endpoints
